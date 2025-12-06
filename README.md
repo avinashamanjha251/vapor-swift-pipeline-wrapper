@@ -1,9 +1,10 @@
-#🚀 MongoDB Aggregation Pipelines in Swift: From Chaos to Clean Code
+# 🚀 MongoDB Aggregation Pipelines in Swift: From Chaos to Clean Code
 
+## The Problem Every Swift + MongoDB Developer Faces
 
-##The Problem Every Swift + MongoDB Developer Faces
 If you've worked with MongoDB aggregation pipelines in Swift, you know the pain:
 
+```swift
 // 😱 The nightmare: 150+ lines of nested BSON
 ["$group": [
     "_id": "$transactionSource._id",
@@ -18,14 +19,19 @@ If you've worked with MongoDB aggregation pipelines in Swift, you know the pain:
         ]
     ]
 ]]
-Sound familiar? Endless brackets, BSON noise, copy-paste errors, and debugging nightmares.
+```
 
-##The Solution: Chainable Builder Pattern
-I spent days building a Swift-native DSL that transforms MongoDB pipelines into clean, readable, maintainable code.
+**Sound familiar?** Endless brackets, BSON noise, copy-paste errors, and debugging nightmares.
 
-Same pipeline, but now:
+***
 
-swift
+## The Solution: Chainable Builder Pattern
+
+I spent months building a **Swift-native DSL** that transforms MongoDB pipelines into clean, readable, maintainable code.
+
+**Same pipeline, but now:**
+
+```swift
 // ✨ The dream: Clean, readable, Swift-like
 pipeline()
     .match(userId: userId, status: "active")
@@ -40,7 +46,9 @@ pipeline()
     }
     .sort("netBalance", ascending: false)
     .paginate(page: 1, limit: 10)
-    
+```
+
+***    
     
     
     
