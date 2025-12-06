@@ -27,7 +27,7 @@ If you've worked with MongoDB aggregation pipelines in Swift, you know the pain:
 
 ## The Solution: Chainable Builder Pattern
 
-I spent months building a **Swift-native DSL** that transforms MongoDB pipelines into clean, readable, maintainable code.
+I spent weeks building a **Swift-native DSL** that transforms MongoDB pipelines into clean, readable, maintainable code.
 
 **Same pipeline, but now:**
 
