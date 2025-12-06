@@ -184,10 +184,7 @@ extension TransactionAmountViewModel {
         
         let balancePipeline = pipeline()
             // Step 1: Match
-            .match([
-                "userId": .string(userId),
-                "status": .string(CategoryStatus.unBlocked)
-            ])
+            .match(userId: userId, status: CategoryStatus.unBlocked)
             
             // Step 2: Group
             .group(by: "$transactionSource._id") {
