@@ -50,7 +50,7 @@ pipeline()
 
 ***    
     
-    <img width="2816" height="1536" alt="Gemini_Generated_Image_dvnz2vdvnz2vdvnz" src="https://github.com/user-attachments/assets/75352008-7993-4893-bcf5-3f40c4495271" />
+![Gemini Generated Image](https://github.com/user-attachments/assets/75352008-7993-4893-bcf5-3f40c4495271)
 
     
 # Complete Comparison: Old vs New Approach
