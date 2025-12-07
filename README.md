@@ -1,5 +1,3 @@
-Here's the updated README with all the improvements from our discussion:
-
 ***
 
 # 🚀 MongoDB Aggregation Pipelines in Swift: From Chaos to Clean Code
