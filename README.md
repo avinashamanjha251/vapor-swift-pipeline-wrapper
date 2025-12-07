@@ -60,7 +60,7 @@ pipeline()
 
 ***
 
-![Gemini Generated Image](https://github.com/user-attachments/assets/75352008-7993-4893-bcf5-3)
+![Gemini Generated Image](https://github.com/user-attachments/assets/75352008-7993-4893-bcf5-3f40c4495271)
 
 
 Comparison: Old vs New Approach
