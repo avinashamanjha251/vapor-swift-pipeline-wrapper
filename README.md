@@ -60,7 +60,10 @@ pipeline()
 
 ***
 
-![Gemini Generated Image](https://github.com/user-attachments/assets/75352008-7993-4893-bcf5-3 Comparison: Old vs New Approach
+![Gemini Generated Image](https://github.com/user-attachments/assets/75352008-7993-4893-bcf5-3)
+
+
+Comparison: Old vs New Approach
 
 ## Before (Raw BSONDocument - Verbose & Hard to Read)
 
