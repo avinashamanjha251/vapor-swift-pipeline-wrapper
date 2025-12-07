@@ -12,9 +12,11 @@ class PaginationBuilder {
     private let pageNo: Int
     private let limit: Int
     private var totalCountField: String = "totalCount"
+    private var includeCurrentPage: Bool = true
     private var includeNextPage: Bool = true
     private var includePrevPage: Bool = false
     private var includeTotalPages: Bool = true
+    private var includeTotalCount: Bool = false
     private var includeHasMore: Bool = false
     
     init(page: Int, limit: Int) {
@@ -25,6 +27,12 @@ class PaginationBuilder {
     @discardableResult
     func setTotalCountField(_ field: String) -> Self {
         self.totalCountField = field
+        return self
+    }
+    
+    @discardableResult
+    func withCurrentPage(_ include: Bool = true) -> Self {
+        self.includeCurrentPage = include
         return self
     }
     
@@ -43,6 +51,12 @@ class PaginationBuilder {
     @discardableResult
     func withTotalPages(_ include: Bool = true) -> Self {
         self.includeTotalPages = include
+        return self
+    }
+       
+    @discardableResult
+    func withTotalCount(_ include: Bool = true) -> Self {
+        self.includeTotalCount = include
         return self
     }
     
@@ -67,12 +81,142 @@ class PaginationBuilder {
         return pageNo
     }
     
-    // Build pagination document for project stage
-    func buildPaginationDocument(metadataPath: String = "$metadata.totalCount") -> BSONDocument {
-        var paginationDoc: BSONDocument = [
-            "currentPage": .int32(Int32(pageNo)),
-            "limit": .int32(Int32(limit)),
-            "totalCount": .document([
+    // Build simple pagination response (using $first)
+    func buildWithFirst(dataField: String = "data",
+                        metadataField: String = "metadata") -> BSONDocument {
+        var projectDoc: BSONDocument = [:]
+        
+        // Always include data field
+        projectDoc[dataField] = .string("$\(dataField)")
+        
+        // Current page - USE LITERAL
+        if includeCurrentPage {
+            projectDoc["currentPage"] = .document([
+                "$literal": .int32(Int32(pageNo))
+            ])
+        }
+        
+        // Extract totalCount using $first
+        let totalCountPath = "$\(metadataField).\(totalCountField)"
+        
+        if includeTotalCount {
+            projectDoc["totalCount"] = .document([
+                "$ifNull": .array([
+                    .document([
+                        "$first": .string(totalCountPath)
+                    ]),
+                    .int32(0)
+                ])
+            ])
+        }
+        
+        if includeTotalPages {
+            projectDoc["totalPages"] = .document([
+                "$ceil": .array([
+                    .document([
+                        "$divide": .array([
+                            .document([
+                                "$ifNull": .array([
+                                    .document([
+                                        "$first": .string(totalCountPath)
+                                    ]),
+                                    .int32(0)
+                                ])
+                            ]),
+                            .int32(Int32(limit))
+                        ])
+                    ])
+                ])
+            ])
+        }
+        
+        if includeNextPage {
+            projectDoc["nextPage"] = .document([
+                "$cond": .array([
+                    .document([
+                        "$lt": .array([
+                            .int32(Int32(pageNo)),
+                            .document([
+                                "$ceil": .array([
+                                    .document([
+                                        "$divide": .array([
+                                            .document([
+                                                "$ifNull": .array([
+                                                    .document([
+                                                        "$first": .string(totalCountPath)
+                                                    ]),
+                                                    .int32(0)
+                                                ])
+                                            ]),
+                                            .int32(Int32(limit))
+                                        ])
+                                    ])
+                                ])
+                            ])
+                        ])
+                    ]),
+                    .document(["$add": .array([.int32(Int32(pageNo)), .int32(1)])]),
+                    .int32(0)
+                ])
+            ])
+        }
+        
+        if includePrevPage {
+            projectDoc["prevPage"] = .document([
+                "$cond": .array([
+                    .document([
+                        "$gt": .array([.int32(Int32(pageNo)), .int32(1)])
+                    ]),
+                    .document(["$subtract": .array([.int32(Int32(pageNo)), .int32(1)])]),
+                    .int32(0)
+                ])
+            ])
+        }
+        
+        if includeHasMore {
+            projectDoc["hasMore"] = .document([
+                "$lt": .array([
+                    .int32(Int32(pageNo)),
+                    .document([
+                        "$ceil": .array([
+                            .document([
+                                "$divide": .array([
+                                    .document([
+                                        "$ifNull": .array([
+                                            .document([
+                                                "$first": .string(totalCountPath)
+                                            ]),
+                                            .int32(0)
+                                        ])
+                                    ]),
+                                    .int32(Int32(limit))
+                                ])
+                            ])
+                        ])
+                    ])
+                ])
+            ])
+        }
+        
+        return projectDoc
+    }
+    
+    // Build pagination document (OLD - using $arrayElemAt)
+    func buildWithArrayElementAt(metadataPath: String = "$metadata.totalCount") -> BSONDocument {
+        var paginationDoc: BSONDocument = [:]
+        
+        if includeCurrentPage {
+            paginationDoc["currentPage"] = .document([
+                "$literal": .int32(Int32(pageNo))
+            ])
+        }
+        
+        paginationDoc["limit"] = .document([
+            "$literal": .int32(Int32(limit))
+        ])
+        
+        if includeTotalCount {
+            paginationDoc["totalCount"] = .document([
                 "$ifNull": .array([
                     .document([
                         "$arrayElemAt": .array([.string(metadataPath), .int32(0)])
@@ -80,7 +224,7 @@ class PaginationBuilder {
                     .int32(0)
                 ])
             ])
-        ]
+        }
         
         if includeTotalPages {
             paginationDoc["totalPages"] = .document([
@@ -128,7 +272,7 @@ class PaginationBuilder {
                         ])
                     ]),
                     .document(["$add": .array([.int32(Int32(pageNo)), .int32(1)])]),
-                    BSON.null
+                    .int32(0)
                 ])
             ])
         }
@@ -140,7 +284,7 @@ class PaginationBuilder {
                         "$gt": .array([.int32(Int32(pageNo)), .int32(1)])
                     ]),
                     .document(["$subtract": .array([.int32(Int32(pageNo)), .int32(1)])]),
-                    BSON.null
+                    .int32(0)
                 ])
             ])
         }
@@ -169,6 +313,7 @@ class PaginationBuilder {
                 ])
             ])
         }
+        
         return paginationDoc
     }
 }

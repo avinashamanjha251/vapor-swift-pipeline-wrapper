@@ -121,14 +121,6 @@ class ProjectBuilder {
         return self
     }
     
-    // Pagination integration
-    @discardableResult
-    func pagination(_ builder: PaginationBuilder, metadataPath: String = "$metadata.totalCount") -> Self {
-        let paginationDoc = builder.buildPaginationDocument(metadataPath: metadataPath)
-        customFields["pagination"] = .document(paginationDoc)
-        return self
-    }
-    
     // ifNull helper
     @discardableResult
     func ifNull(_ key: String, field: BSON, default defaultValue: BSON) -> Self {
@@ -163,5 +155,31 @@ class ProjectBuilder {
         }
         
         return doc
+    }
+}
+
+extension ProjectBuilder {
+    
+    // Add pagination using $first (NEW - Cleaner)
+    @discardableResult
+    func paginationWithFirst(_ builder: PaginationBuilder,
+                             dataField: String = ApiKey.data,
+                             metadataField: String = "metadata") -> Self {
+        let paginationDoc = builder.buildWithFirst(dataField: dataField,
+                                                   metadataField: metadataField)
+        
+        for (key, value) in paginationDoc {
+            customFields[key] = value
+        }
+        
+        return self
+    }
+    
+    // Add pagination (OLD - using $arrayElemAt)
+    @discardableResult
+    func paginationWithArrayElementAt(_ builder: PaginationBuilder, metadataPath: String = "$metadata.totalCount") -> Self {
+        let paginationDoc = builder.buildWithArrayElementAt(metadataPath: metadataPath)
+        customFields["pagination"] = .document(paginationDoc)
+        return self
     }
 }

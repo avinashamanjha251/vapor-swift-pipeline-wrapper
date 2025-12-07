@@ -120,13 +120,23 @@ class PipelineChain: @unchecked Sendable {
         return self
     }
     
-    // MARK: - Getters
+//    // MARK: - Getters
+//    func getStages() -> [AggregationStage] {
+//        return stages
+//    }
+    // Get stages with filtering empty ones
     func getStages() -> [AggregationStage] {
-        return stages
+        return stages.filter { !$0.bson.isEmpty }
     }
     
     func build() -> [BSONDocument] {
         return stages.map { $0.bson }
+    }
+    
+    func debugPrintStages() {
+        for (index, stage) in stages.enumerated() {
+            print("Stage \(index): \(stage)")
+        }
     }
 }
 
@@ -281,5 +291,94 @@ extension BaseMongoViewModel {
     /// Create pipeline chain
     func pipeline() -> PipelineChain {
         return PipelineChain()
+    }
+}
+
+extension PipelineChain {
+    
+    // MARK: - Generic Match Methods
+    
+    // Match single field with value
+    @discardableResult
+    func matchField(_ key: String, equals value: BSON) -> Self {
+        stages.append(.matchField(key: key, value: value))
+        return self
+    }
+    
+    // Match field in array of strings
+    @discardableResult
+    func matchFieldIn(_ key: String, values: [String]?) -> Self {
+        guard let values = values, !values.isEmpty else { return self }
+        stages.append(.matchFieldIn(key: key, values: values))
+        return self
+    }
+    
+    // Match field in array of ObjectIDs
+    @discardableResult
+    func matchFieldInObjectIds(_ key: String, values: [String]?) -> Self {
+        guard let values = values, !values.isEmpty else { return self }
+        stages.append(.matchFieldInObjectIds(key: key, values: values))
+        return self
+    }
+    
+    // Match date range
+    @discardableResult
+    func matchDateRange(_ dateRange: DateRange, key: String = ApiKey.createdAt) -> Self {
+        stages.append(.matchDateRange(key: key, dateRange: dateRange))
+        return self
+    }
+    
+    // Match number range
+    @discardableResult
+    func matchNumberRange(_ key: String, min: Double? = nil, max: Double? = nil) -> Self {
+        guard min != nil || max != nil else { return self }
+        stages.append(.matchNumberRange(key: key, min: min, max: max))
+        return self
+    }
+    
+    // Match greater than
+    @discardableResult
+    func matchGreaterThan(_ key: String, value: Double) -> Self {
+        stages.append(.matchGreaterThan(key: key, value: value))
+        return self
+    }
+    
+    // Match less than
+    @discardableResult
+    func matchLessThan(_ key: String, value: Double) -> Self {
+        stages.append(.matchLessThan(key: key, value: value))
+        return self
+    }
+    
+    // Match exists
+    @discardableResult
+    func matchExists(_ key: String, exists: Bool = true) -> Self {
+        stages.append(.matchExists(key: key, exists: exists))
+        return self
+    }
+    
+    // Match regex
+    @discardableResult
+    func matchRegex(_ key: String, pattern: String, options: String? = nil) -> Self {
+        stages.append(.matchRegex(key: key, pattern: pattern, options: options))
+        return self
+    }
+    
+    // MARK: - Generic Sort Methods
+    
+    // Sort by single field
+    @discardableResult
+    func sortField(_ key: String, ascending: Bool = true) -> Self {
+        stages.append(.sortField(key: key, ascending: ascending))
+        return self
+    }
+    
+    // Sort by type (specific to your use case)
+    @discardableResult
+    func sortByType(_ sortBy: String?,
+                    amountKey: String = ApiKey.amount,
+                    dateKey: String = ApiKey.createdAt) -> Self {
+        stages.append(.sortByType(sortBy, amountKey: amountKey, dateKey: dateKey))
+        return self
     }
 }
