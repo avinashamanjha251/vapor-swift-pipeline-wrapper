@@ -273,6 +273,15 @@ extension MongoCRUD {
         return try await sumAggregatePipeline(pipeline)
     }
     
+    /// Execute pipeline chain and return raw BSONDocuments
+    func executePipelineSingle(_ chain: PipelineChain) async throws -> BSONDocument {
+        let results = try await executePipelineRaw(chain)
+        guard let firstResult = results.first else {
+            throw Abort(.notFound, reason: "No data found")
+        }
+        return firstResult
+    }
+    
     /// Execute pipeline chain and decode to models
     func executePipeline<T: Codable>(_ chain: PipelineChain,
                                      as type: T.Type) async throws -> [T] {

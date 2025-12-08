@@ -83,11 +83,13 @@ class PaginationBuilder {
     
     // Build simple pagination response (using $first)
     func buildWithFirst(dataField: String = "data",
-                        metadataField: String = "metadata") -> BSONDocument {
+                        metadataField: String = "metadata",
+                        includeDataField: Bool = true) -> BSONDocument {
         var projectDoc: BSONDocument = [:]
         
-        // Always include data field
-        projectDoc[dataField] = .string("$\(dataField)")
+        if includeDataField {
+            projectDoc[dataField] = .string("$\(dataField)")
+        }
         
         // Current page - USE LITERAL
         if includeCurrentPage {

@@ -164,9 +164,11 @@ extension ProjectBuilder {
     @discardableResult
     func paginationWithFirst(_ builder: PaginationBuilder,
                              dataField: String = ApiKey.data,
-                             metadataField: String = "metadata") -> Self {
+                             metadataField: String = "metadata",
+                             includeDataField: Bool = true) -> Self {
         let paginationDoc = builder.buildWithFirst(dataField: dataField,
-                                                   metadataField: metadataField)
+                                                   metadataField: metadataField,
+                                                   includeDataField: includeDataField)
         
         for (key, value) in paginationDoc {
             customFields[key] = value
@@ -180,6 +182,17 @@ extension ProjectBuilder {
     func paginationWithArrayElementAt(_ builder: PaginationBuilder, metadataPath: String = "$metadata.totalCount") -> Self {
         let paginationDoc = builder.buildWithArrayElementAt(metadataPath: metadataPath)
         customFields["pagination"] = .document(paginationDoc)
+        return self
+    }
+}
+
+extension ProjectBuilder {
+    // Add nested document with builder
+    @discardableResult
+    func add(_ key: String, _ configure: (NestedDocumentBuilder) -> Void) -> Self {
+        let builder = NestedDocumentBuilder()
+        configure(builder)
+        customFields[key] = .document(builder.build())
         return self
     }
 }
